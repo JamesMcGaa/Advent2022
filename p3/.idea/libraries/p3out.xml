@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="p3out">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/p3out.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
