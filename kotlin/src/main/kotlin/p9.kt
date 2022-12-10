@@ -6,28 +6,29 @@ import kotlin.math.sign
 fun main(args: Array<String>) {
 
     val tailVisited = HashSet<Pair<Int, Int>>()
-    var tailLoc = Pair(0,0)
-    tailVisited.add(tailLoc)
-
-    var headLoc = Pair(0,0)
+    val ropes = mutableListOf<Pair<Int, Int>>()
+    val numRopes = 10
+    for(i in 0 until numRopes) {
+        ropes.add(Pair(0,0))
+    }
     File("inputs/input9.txt").forEachLine { line ->
         val moves = line.split(" ")
         val amount = Integer.parseInt(moves[1])
         for (i in 1..amount) {
-            headLoc = when (moves[0]) {
-                "R" -> Pair(headLoc.first + 1, headLoc.second)
-                "L" -> Pair(headLoc.first - 1, headLoc.second)
-                "U" -> Pair(headLoc.first, headLoc.second + 1)
-                "D" -> Pair(headLoc.first, headLoc.second - 1)
+            ropes[0] = when (moves[0]) {
+                "R" -> Pair(ropes[0].first + 1, ropes[0].second)
+                "L" -> Pair(ropes[0].first - 1, ropes[0].second)
+                "U" -> Pair(ropes[0].first, ropes[0].second + 1)
+                "D" -> Pair(ropes[0].first, ropes[0].second - 1)
                 else -> throw Exception()
             }
-            tailLoc = newTailLoc(tailLoc, headLoc)
-            tailVisited.add(tailLoc)
+            for (i in 1 until numRopes) {
+                ropes[i] = newTailLoc(ropes[i], ropes[i-1])
+            }
+            tailVisited.add(ropes[numRopes - 1])
         }
     }
     println(tailVisited.size)
-
-
 }
 
 fun newTailLoc(tailLoc: Pair<Int, Int>, headLoc: Pair<Int, Int>): Pair<Int, Int> {
