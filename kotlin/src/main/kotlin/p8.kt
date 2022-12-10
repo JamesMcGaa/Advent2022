@@ -16,51 +16,77 @@ fun main(args: Array<String>) {
             val parallel = mutableListOf<Int>()
 
 
-            for (row_val in 0 until r) {
-                parallel.add(board[row_val][c])
+            for (rowVal in 0 until r) {
+                parallel.add(board[rowVal][c])
             }
             parallel.reverse()
             parallels.add(ArrayList(parallel))
             parallel.clear()
 
 
-            for (row_val in r+1 until m) {
-                parallel.add(board[row_val][c])
+            for (rowVal in r+1 until m) {
+                parallel.add(board[rowVal][c])
             }
             parallels.add(ArrayList(parallel))
             parallel.clear()
 
-            for (col_val in 0 until c) {
-                parallel.add(board[r][col_val])
+            for (colVal in 0 until c) {
+                parallel.add(board[r][colVal])
             }
             parallel.reverse()
             parallels.add(ArrayList(parallel))
             parallel.clear()
 
 
-            for (col_val in c+1 until n) {
-                parallel.add(board[r][col_val])
+            for (colVal in c+1 until n) {
+                parallel.add(board[r][colVal])
             }
             parallels.add(ArrayList(parallel))
             parallel.clear()
 
-            var hasInc = false
+            run explicitAnnotationToSimulateBreak@{
+                parallels.forEach { parallel ->
+                    if (parallel.isEmpty() || board[r][c] > parallel.max()) {
+                        visibleCount += 1
+                        return@explicitAnnotationToSimulateBreak
+                    }
+                }
+            }
+
+            var scenicScore = 1
             parallels.forEach { parallel ->
-                if (hasInc) {
-                    return@forEach
-                }
-                if (parallel.isEmpty() || board[r][c] > parallel.max()) {
-                    visibleCount += 1
-
-                }
-
+                val copy = ArrayList(parallel)
+                scenicScore *= incSubsequence(copy, board[r][c])
             }
+            println("${r}, ${c}, ${scenicScore}")
+            if (scenicScore > maxScenicScore) {
+                maxScenicScore = scenicScore
+            }
+
 
         }
     }
 
     println(visibleCount)
+    println(maxScenicScore)
 }
 
+fun incSubsequence(nums: List<Int>, treeHeight: Int): Int {
+    if (nums.isEmpty()) {
+        return 1
+    }
+
+    var counter = 0
+
+    nums.forEach {
+        num ->
+        counter += 1
+        if (num >= treeHeight) {
+           return counter
+        }
+    }
+
+    return counter
+}
 
 
