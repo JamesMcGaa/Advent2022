@@ -15,42 +15,66 @@ fun main() {
         valveMap[valve.ID] = valve
     }
 
-    val memo = hashMapOf(Triple(0,0,"AA") to 0)
-    var frontier = hashSetOf(Triple(0,0,"AA"))
+    var memo = hashMapOf(BoardState(0,"AA","AA") to 0)
+    var frontier = hashSetOf(BoardState(0,"AA","AA"))
 
-    for (time in 1 .. 30) {
+    for (time in 1 .. 26) {
         println(time)
-        var newFrontier = hashSetOf<Triple<Int,Int,String>>()
+        var newFrontier = hashSetOf<BoardState>()
+        var newMemo =  hashMapOf<BoardState, Int>()
         while (frontier.isNotEmpty()) {
             val current = frontier.pop()!!
-            val currentState = current.first
-            val currentValve = valveMap[current.third]!!
+            val currentState = current.state
+            val humanValve = valveMap[current.humanValve]!!
+            val elephantValve = valveMap[current.elephantValve]!!
             val inc = getInc(currentState, nonzeroValves)
 
             // If its nonzero and not already activated
-            if (nonzeroValves.contains(currentValve)) {
-                val valveIdx = nonzeroValves.indexOf(currentValve)
+            val intermediateStates = hashSetOf<BoardState>()
+            if (nonzeroValves.contains(humanValve)) {
+                val valveIdx = nonzeroValves.indexOf(humanValve)
                 if (!isOn(currentState, valveIdx)) {
-                    val switchedOn = Triple(switchOn(currentState, valveIdx), time, currentValve.ID)
-                    newFrontier.add(switchedOn)
-                    memo[switchedOn] = max(memo[current]!! + inc, memo.getOrDefault(switchedOn, 0))
+                    intermediateStates.add(BoardState(switchOn(current.state, valveIdx), current.humanValve, current.elephantValve))
+                }
+            }
+            humanValve.adj.forEach {
+                adjID ->
+                intermediateStates.add(BoardState(current.state, adjID, current.elephantValve))
+            }
+
+            val finalStates = hashSetOf<BoardState>()
+            intermediateStates.forEach { intermediateState ->
+                if (nonzeroValves.contains(elephantValve)) {
+                    val valveIdx = nonzeroValves.indexOf(elephantValve)
+                    if (!isOn(intermediateState.state, valveIdx)) {
+                        finalStates.add(BoardState(switchOn(intermediateState.state, valveIdx), intermediateState.humanValve, intermediateState.elephantValve))
+                    }
+                }
+                elephantValve.adj.forEach {
+                        adjID ->
+                    finalStates.add(BoardState(intermediateState.state, intermediateState.humanValve, adjID))
                 }
             }
 
-            currentValve.adj.forEach {
-                adjID ->
-                val visited = Triple(currentState, time, adjID)
-                newFrontier.add(visited)
-                memo[visited] = max(memo[current]!! + inc, memo.getOrDefault(visited, 0))
+            finalStates.forEach {finalState ->
+                newFrontier.add(finalState)
+                newMemo[finalState] = max(memo[current]!! + inc, memo.getOrDefault(finalState, 0))
             }
         }
 
+        memo = HashMap(newMemo)
         frontier = newFrontier.toHashSet() //copy
     }
 
     println(memo.values.max())
 
 }
+
+data class BoardState(
+   val state: Int,
+   val humanValve: String,
+   val elephantValve: String,
+)
 
 fun isOn(state: Int, index: Int): Boolean {
     return state and (1 shl index) > 0
