@@ -4,9 +4,8 @@ import kotlin.Exception
 import kotlin.math.absoluteValue
 
 fun main() {
-    var mostSoFar = 0
     val valves = mutableListOf<Valve>()
-    val lines = File("inputs/input16.txt").forEachLine {
+    File("inputs/input16.txt").forEachLine {
         valves.add(Valve(it))
     }
     val nonzeroValves = valves.filter { valve -> valve.flow > 0 }
@@ -19,7 +18,7 @@ fun main() {
     var frontier = hashSetOf(BoardState(0,"AA","AA"))
 
     for (time in 1 .. 26) {
-        println(time)
+        println("Time: ${time}, Frontier Size: ${frontier.size}, Memo Size: ${memo.size}")
         var newFrontier = hashSetOf<BoardState>()
         var newMemo =  hashMapOf<BoardState, Int>()
         while (frontier.isNotEmpty()) {
@@ -58,12 +57,12 @@ fun main() {
 
             finalStates.forEach {finalState ->
                 newFrontier.add(finalState)
-                newMemo[finalState] = max(memo[current]!! + inc, memo.getOrDefault(finalState, 0))
+                newMemo[finalState] = max(memo[current]!! + inc, newMemo.getOrDefault(finalState, 0))
             }
         }
 
         memo = HashMap(newMemo)
-        frontier = newFrontier.toHashSet() //copy
+        frontier = newFrontier.toList().sortedBy { boardState -> newMemo[boardState] }.takeLast(100000).toHashSet() // Cheese
     }
 
     println(memo.values.max())
