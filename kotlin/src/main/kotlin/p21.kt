@@ -2,7 +2,7 @@ import java.io.File
 import java.util.Scanner
 
 fun main() {
-  println("STARTED")
+  println("Started")
   var step = 1000000000000L
   var current = 0L
   while(true) {
@@ -10,28 +10,27 @@ fun main() {
     current += step
     Monkey.ALL_MONKEYS.clear()
     val result = run(current, false)!!
-    if (result.first - result.second < 0) {
+    if (result < 0) {
       current -= step
       step /= 10L
     }
-    if (result.first - result.second == 0L) {
-      println(result)
-      println("DONE")
+    if (result == 0L) {
+      println("Approximate zero: ${result}")
       break
     }
   }
 
-  for (i in current - 1000 .. current + 1000) {
+  for (i in current - step .. current + step) {
     println(i)
     val result = run(i, true)
-    if (result != null && result.first - result.second == 0L) {
+    if (result != null && result == 0L) {
       println(i)
       return
     }
   }
 }
 
-fun run(trial: Long, strictDivision: Boolean): Pair<Long, Long>? {
+fun run(trial: Long, strictDivision: Boolean): Long? {
   File("input21.txt").forEachLine { line ->
     val identifier = line.split(":")[0].trim()
     val op = line.split(":")[1]
@@ -75,13 +74,12 @@ fun run(trial: Long, strictDivision: Boolean): Pair<Long, Long>? {
 
   while (!Monkey.ALL_MONKEYS["root"]!!.isFinalized) {
     Monkey.ALL_MONKEYS.values.forEach { monkey ->
-      val computeVal = monkey.compute(strictDivision)
-      if (computeVal == null && strictDivision) {
-        return null
-      }
-      if (monkey.ID == "root" && monkey.isFinalized) {
-        return computeVal
-      }
+      try {
+        val computeVal = monkey.compute(strictDivision)
+        if (monkey.ID == "root" && monkey.isFinalized) {
+          return computeVal
+        }
+      } catch (e: Exception) {return null}
     }
     Monkey.ALL_MONKEYS.values.forEach { monkey ->
       monkey.finalize()
@@ -107,7 +105,7 @@ class Monkey(
     val ALL_MONKEYS = hashMapOf<String, Monkey>()
   }
 
-  fun compute(strictDivision: Boolean): Pair<Long, Long>? {
+  fun compute(strictDivision: Boolean): Long? {
     if (!isFinalized) {
       if (ALL_MONKEYS[dependencies!!.first]!!.isFinalized &&
               ALL_MONKEYS[dependencies.second]!!.isFinalized
@@ -117,7 +115,7 @@ class Monkey(
           "*" -> ALL_MONKEYS[dependencies.first]!!.literalVal!! * ALL_MONKEYS[dependencies.second]!!.literalVal!!
           "/" -> {
             if (strictDivision && ALL_MONKEYS[dependencies.first]!!.literalVal!! % ALL_MONKEYS[dependencies.second]!!.literalVal!! != 0L) {
-              return null
+              throw Exception("BAD STRICT DIVISION")
             }
             ALL_MONKEYS[dependencies.first]!!.literalVal!! / ALL_MONKEYS[dependencies.second]!!.literalVal!!
           }
@@ -128,14 +126,12 @@ class Monkey(
 
         if (ID == "root") {
           isFinalized = true
-          println(ALL_MONKEYS[dependencies.first]!!.literalVal!!)
-          println(ALL_MONKEYS[dependencies.second]!!.literalVal!!)
           println(ALL_MONKEYS[dependencies.first]!!.literalVal!! - ALL_MONKEYS[dependencies.second]!!.literalVal!!)
-          return Pair(ALL_MONKEYS[dependencies.first]!!.literalVal!!, ALL_MONKEYS[dependencies.second]!!.literalVal!!)
+          return ALL_MONKEYS[dependencies.first]!!.literalVal!! - ALL_MONKEYS[dependencies.second]!!.literalVal!!
         }
       }
     }
-    return Pair(-100L, -1000L)
+    return null
   }
 
   fun finalize() {
