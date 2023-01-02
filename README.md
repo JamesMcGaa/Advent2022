@@ -1,3 +1,6 @@
+# Advent of Code 2022
+
+![AOC Image](img.png)
 # Context
 
 This was my third AOC attempt and second time completing it in its entirety. I did this for fun this year and did not compete for leaderboards. 
